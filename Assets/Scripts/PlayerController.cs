@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float jumpStrength;
     [SerializeField] private float jumpDuration;
     [SerializeField] private float gravity;
+    private SpriteRenderer _playerRenderer;
 
     private float _moveDirection;
     private InputAction _jumpButton;
@@ -48,15 +49,30 @@ public class PlayerController : MonoBehaviour {
         return rayCastHit.collider != null;
     }
     
-    void Start() => _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
+    void Start() {
+        _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
+        _playerRenderer = GetComponent<SpriteRenderer>();
+    }
 
     private void Update() {
         // Store this one in boolean. Otherwise we may be able to jump after
         // jump duration is ended but player haven't landed on ground yet... 
-        if (_jumpButton.IsPressed() && IsGrounded()) _isJumping = true;
+        if (_jumpButton.IsPressed() && IsGrounded()) {
+            _isJumping = true;
+            MySceneManager.Instance.ChangeAllColorsInScene();   // Call on jump
+        }
         HandleVerticals();
         MoveTo(_nextPosition * Time.deltaTime);
     }
 
-    void OnMove(InputValue moveVector) => _nextPosition.x = moveVector.Get<Vector2>().x * moveSpeed;
+    void OnMove(InputValue moveVector) {
+        var move = moveVector.Get<Vector2>();
+        if (move.x < 0) {   // Flip player sprite based on movement direction 
+            _playerRenderer.flipX = false;
+        }
+        else if (move.x > 0) {
+            _playerRenderer.flipX = true;
+        }
+        _nextPosition.x = move.x * moveSpeed;
+    }
 }
