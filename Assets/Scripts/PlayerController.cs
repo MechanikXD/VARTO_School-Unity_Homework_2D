@@ -27,8 +27,7 @@ public class PlayerController : MonoBehaviour {
     private void HandleVerticals() {
         // We ignore gravity while jumping
         if (_jumpButton.IsPressed() && _currentJumpDuration < jumpDuration && _isJumping) {
-            // TODO: Make jump with non-linear strength
-            _nextPosition.y += jumpStrength;
+            _nextPosition.y += PolynomialSmoothing(_currentJumpDuration, jumpStrength, jumpDuration);
             _currentJumpDuration += Time.deltaTime;
         }
         else {
@@ -74,5 +73,9 @@ public class PlayerController : MonoBehaviour {
             _playerRenderer.flipX = true;
         }
         _nextPosition.x = move.x * moveSpeed;
+    }
+
+    private float PolynomialSmoothing(float time, float weight, float maxTime) {
+        return (1 / weight) * (-time * time + maxTime * maxTime);
     }
 }
