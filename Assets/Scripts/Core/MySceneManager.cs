@@ -9,14 +9,14 @@ namespace Core {
     public class MySceneManager : MonoBehaviour {
         private static MySceneManager _instance;
         private static Scene _currentScene;
-        private static List<GameObject> _platformPool;
+        private static List<GameObject> _platformPool;  // Pool of platform to build level from. (Should be on scene)
         private static Transform _playerPosition;
-        private static float _platformRepositionDistance;
+        private static float _platformRepositionDistance;   // Distance from platform to player when can safety reposition
 
-        private int _nextPlatformToMoveIndex;
-        private const float SceneCenter = 0.2f;
+        private int _nextPlatformToMoveIndex;   // Iterate list instead of queue
+        private const float SceneCenter = 0.2f; // A bit offset, since it looks better
         private const float ScreenRelativePlatformDeviation = 0.6f; // part of the half of the screen from center
-        private static float _platformMaxHorizontalStep;
+        private static float _platformMaxHorizontalStep; 
         private static float _platformVerticalStep;
 
         public static MySceneManager Instance {
@@ -50,7 +50,6 @@ namespace Core {
         }
 
         private void Update() {
-            // Funny, I can convert it into stupidly huge LINQ expression...
             for (var i = 0; i < _platformPool.Count; i++) {
                 if (_platformPool[i].transform.position.y < _playerPosition.position.y) {
                     if (_platformPool[i].TryGetComponent<BoxCollider2D>(out var platformCollider)) {
@@ -75,7 +74,7 @@ namespace Core {
                 MovePlatform(_nextPlatformToMoveIndex, GetCoordinatesForNextPlatform());
             }
         }
-
+        // TODO: Move into separate Platform class
         private void MovePlatform(int platformIndex, Vector2 newPosition) {
             _platformPool[platformIndex].transform.position = newPosition;
             
@@ -85,7 +84,7 @@ namespace Core {
             
             AdvanceIndexInPool();
         }
-
+        
         private Vector2 GetCoordinatesForNextPlatform() {
             var newX = SceneCenter +
                        Random.Range(-_platformMaxHorizontalStep, _platformMaxHorizontalStep);
@@ -102,7 +101,7 @@ namespace Core {
             return _nextPlatformToMoveIndex - 1 < 0 ?
                 _platformPool.Count -1 : _nextPlatformToMoveIndex - 1;
         }
-
+        // TODO: Move into separate Platform class
         private bool PlatformOutsidePLayerVisibility(int platformIndex) {
             var distanceToPlatform = _playerPosition.position.y -
                                      _platformPool[platformIndex].transform.position.y;

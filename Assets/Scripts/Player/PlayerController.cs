@@ -3,8 +3,6 @@ using UnityEngine.InputSystem;
 using Core;
 
 namespace Player {
-    using System.Collections;
-
     public class PlayerController : MonoBehaviour {
         [SerializeField] private Transform playerTransform;
         [SerializeField] private Vector2 startingPosition;
@@ -72,8 +70,6 @@ namespace Player {
             playerTransform.position = new Vector3(startingPosition.x, startingPosition.y + 1f);
             _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
             _playerRenderer = GetComponent<SpriteRenderer>();
-            // Delay start so everything can load, otherwise may fall through platforms
-            // StartCoroutine(DelayGameStart(1));
         }
 
         private void Update() {
@@ -81,7 +77,7 @@ namespace Player {
             // jump duration is ended but player haven't landed on ground yet... 
             if (_jumpButton.IsPressed() && IsGrounded()) {
                 _isJumping = true;
-                // MySceneManager.Instance.ChangeAllColorsInScene(); // Call on jump
+                // MySceneManager.Instance.ChangeAllColorsInScene(); // Previous homework
             }
 
             HandleVerticals();
@@ -107,12 +103,6 @@ namespace Player {
 
         private float PolynomialSmoothing(float time, float weight, float maxTime) {
             return weight / maxTime * time * time + 1;
-        }
-
-        public IEnumerator DelayGameStart(float delayTime) {
-            Time.timeScale = 0;
-            yield return new WaitForSeconds(delayTime);
-            Time.timeScale = 1;
         }
     }
 }
