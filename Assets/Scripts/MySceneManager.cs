@@ -1,3 +1,5 @@
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -5,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class MySceneManager : MonoBehaviour {
     private static MySceneManager _instance;
     private static Scene _currentScene;
+    private GameObject _platformObject;
 
     public static MySceneManager Instance {
         get {
@@ -19,6 +22,13 @@ public class MySceneManager : MonoBehaviour {
             _currentScene = SceneManager.GetActiveScene();
 
             return _instance;
+        }
+    }
+
+    public void SetupScene(Vector2 startPlatformCoordinates) {
+        _platformObject = GameObject.FindGameObjectWithTag("Ground");
+        if (_platformObject != null) {
+            _platformObject.transform.position = startPlatformCoordinates;    
         }
     }
     

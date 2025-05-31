@@ -3,17 +3,19 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour {
     [SerializeField] private Transform playerTransform;
+    private SpriteRenderer _playerRenderer;
+    
     [SerializeField] private float moveSpeed;
+    private float _moveDirection;
+    private Vector2 _nextPosition;
+    
     [SerializeField] private float jumpStrength;
     [SerializeField] private float jumpDuration;
     [SerializeField] private float gravity;
-    private SpriteRenderer _playerRenderer;
-
-    private float _moveDirection;
     private InputAction _jumpButton;
-    private Vector2 _nextPosition;
     private float _currentJumpDuration;
-    private const float MaxRayCastLength = 0.2f;    // I'm fine this current value BUT ray cast ends within player.
+    private float _currentAirborneDuration;
+    private const float MaxRayCastLength = 0.3f;
     private bool _isJumping;
     
     /// Teleports player to given coordinates. Should be used with Time.deltaTime for smoother movement.
@@ -27,28 +29,36 @@ public class PlayerController : MonoBehaviour {
     private void HandleVerticals() {
         // We ignore gravity while jumping
         if (_jumpButton.IsPressed() && _currentJumpDuration < jumpDuration && _isJumping) {
-            _nextPosition.y += PolynomialSmoothing(_currentJumpDuration, jumpStrength, jumpDuration);
+            _nextPosition.y += ReversePolynomialSmoothing(_currentJumpDuration, jumpStrength, jumpDuration);
             _currentJumpDuration += Time.deltaTime;
         }
         else {
             _isJumping = false;
             _currentJumpDuration = 0;
             if (IsGrounded()) {
+                _currentAirborneDuration = 0;
                 _nextPosition.y = 0;
             }
             else {
-                _nextPosition.y = -gravity;
+                _currentAirborneDuration += Time.deltaTime;
+                _nextPosition.y = -PolynomialSmoothing(_currentAirborneDuration, gravity, 1);
             }
         }
     }
 
-    // Player HAVE TO NO HAVE collider, because this will break 
+    // Player have to NOT have collider, because this will break 
     private bool IsGrounded() {
-        var rayCastHit = Physics2D.Raycast(transform.position, Vector2.down, MaxRayCastLength);
-        return rayCastHit.collider != null;
+        // Kinda bad implementation, at this point should've used rigidBody to detect collision,
+        // but I'm too stubborn to do so... (RigidBody sucks)
+        var position = transform.position;
+        var furtherRayCastHit = Physics2D.Raycast(position, Vector2.down, MaxRayCastLength + 0.1f);
+        var closerRayCastHit = Physics2D.Raycast(position, Vector2.down, MaxRayCastLength);
+        // Basically check that we are not IN the ground by doing 2 rayCasts with slight margin 
+        return closerRayCastHit.collider == null && furtherRayCastHit.collider != null;
     }
     
     void Start() {
+        MySceneManager.Instance.SetupScene(new Vector2(0.2f, -0.7f - 1));
         _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
         _playerRenderer = GetComponent<SpriteRenderer>();
     }
@@ -75,7 +85,11 @@ public class PlayerController : MonoBehaviour {
         _nextPosition.x = move.x * moveSpeed;
     }
 
-    private float PolynomialSmoothing(float time, float weight, float maxTime) {
+    private float ReversePolynomialSmoothing(float time, float weight, float maxTime) {
         return (1 / weight) * (-time * time + maxTime * maxTime);
+    }
+
+    private float PolynomialSmoothing(float time, float weight, float maxTime) {
+        return weight / maxTime * time * time + 1;
     }
 }
