@@ -17,6 +17,7 @@ namespace Core {
         private int _nextPlatformToMoveIndex;   // Iterate list instead of queue
         private const float SceneCenter = 0.2f; // A bit offset, since it looks better
         private const float ScreenRelativePlatformDeviation = 0.6f; // part of the half of the screen from center
+        private const int PlatformCount = 5;
         private static float _platformMaxHorizontalStep; 
         private static float _platformVerticalStep;
 
@@ -33,11 +34,13 @@ namespace Core {
                 _playerPosition = GameObject.FindGameObjectWithTag("Player").transform;
                 _currentScene = SceneManager.GetActiveScene();
 
-                _platformPool = new List<Platform>();
-                var groundObjects = GameObject.FindGameObjectsWithTag("Ground");
-                foreach (var ground in groundObjects) {
-                    _platformPool.Add(new Platform(ground));
+                _platformPool = new List<Platform>(PlatformCount);
+                var groundObjects = GameObject.FindGameObjectWithTag("Ground");
+                for (var _ = 0; _ < PlatformCount; _++) {
+                    _platformPool.Add(new Platform(groundObjects));
                 }
+                // Alternatively: Keep first object in list and instantiate one less platform
+                Destroy(groundObjects); // Destroy original to avoid duplicates.
 
                 if (Camera.main != null) {
                     var mainCamera = Camera.main;

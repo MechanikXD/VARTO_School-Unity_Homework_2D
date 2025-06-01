@@ -7,8 +7,8 @@
 
         public float PlatformY => PlatformObject.transform.position.y;
         
-        public Platform(GameObject platform) {
-            PlatformObject = platform;
+        public Platform(GameObject platformReference) {
+            PlatformObject = Object.Instantiate(platformReference);
         }
         
         public bool IsOutsidePlayerVisibility(float playerY, float playerToBottomScreenDist) {
