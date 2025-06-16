@@ -11,7 +11,7 @@ namespace Core {
             var cameraPosition = cameraTransform.position;
             var newPosition = new Vector3(cameraPosition.x, target.position.y + verticalOffset, cameraPosition.z);
 
-            cameraTransform.position = Vector3.Lerp(cameraPosition, newPosition, smoothness);
+            cameraTransform.position = Vector3.Lerp(cameraPosition, newPosition, smoothness * Time.deltaTime);
         }
     }
 }

@@ -3,7 +3,7 @@
 namespace GamePlatform {
     public class Platform {
         private readonly GameObject _platformObject;
-        private const float MarginToReposition = 2f; // To ensure that platforms disappear and appear outside player visibility
+        private const float MarginToReposition = 3f; // To ensure that platforms disappear and appear outside player visibility
 
         public float PlatformY => _platformObject.transform.position.y;
         
@@ -11,6 +11,7 @@ namespace GamePlatform {
             _platformObject = Object.Instantiate(platformReference);
         }
         
+        // TODO: Incorrect distance calculation
         public bool IsOutsidePlayerVisibility(float playerY, float playerToBottomScreenDist) {
             var distanceToPlatform = playerY - _platformObject.transform.position.y;
             return distanceToPlatform >= playerToBottomScreenDist + MarginToReposition;

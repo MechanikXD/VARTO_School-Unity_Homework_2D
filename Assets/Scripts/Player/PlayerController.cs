@@ -18,7 +18,6 @@ namespace Player {
         private bool _isJumping;
 
         private bool HasVerticalVelocity(out float verticalVelocity) {
-            // We ignore gravity while jumping
             if (_jumpButton.IsPressed() && _currentJumpDuration < jumpDuration && _isJumping) {
                 _currentJumpDuration += Time.deltaTime;
                 verticalVelocity = jumpStrength;
@@ -33,7 +32,12 @@ namespace Player {
             }
         }
 
-        private bool IsGrounded() => _playerBody.linearVelocity.y == 0;
+        private bool IsGrounded() {
+            // Linear velocity on Y != 0 when moving due to calculation errors 
+            Vector2 linearVelocity = _playerBody.linearVelocity;
+            var calculationError = 0.0001f;
+            return linearVelocity.y > -calculationError && linearVelocity.y < calculationError;
+        }
 
         void Start() {
             MySceneManager.Instance.SetupScene(startingPosition);
@@ -53,7 +57,9 @@ namespace Player {
             if (HasVerticalVelocity(out var velocity)) {
                 _playerBody.linearVelocityY = velocity;
             }
-            _playerBody.linearVelocityX = _horizontalVelocity;
+            else {
+                _playerBody.linearVelocityX = _horizontalVelocity;
+            }
         }
 
         void OnMove(InputValue moveVector) {
