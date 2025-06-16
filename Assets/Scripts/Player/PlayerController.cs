@@ -4,72 +4,43 @@ using Core;
 
 namespace Player {
     public class PlayerController : MonoBehaviour {
-        [SerializeField] private Transform playerTransform;
         [SerializeField] private Vector2 startingPosition;
         private SpriteRenderer _playerRenderer;
+        private Rigidbody2D _playerBody;
 
         [SerializeField] private float moveSpeed;
-        private float _moveDirection;
-        private Vector2 _nextPosition;
+        private float _horizontalVelocity;
 
         [SerializeField] private float jumpStrength;
         [SerializeField] private float jumpDuration;
-        [SerializeField] private float gravity;
         private InputAction _jumpButton;
         private float _currentJumpDuration;
-        private float _currentAirborneDuration;
-        private const float MaxRayCastLength = 0.3f;
         private bool _isJumping;
 
-        /// Teleports player to given coordinates. Should be used with Time.deltaTime for smoother movement.
-        private void MoveTo(Vector2 newPlayerPosition) {
-            var newPosition = playerTransform.position;
-            newPosition.x += newPlayerPosition.x;
-            newPosition.y += newPlayerPosition.y;
-            playerTransform.position = newPosition;
-        }
-
-        /// Function to handle vertical movement (gravity, jump)
-        private void HandleVerticals() {
+        private bool HasVerticalVelocity(out float verticalVelocity) {
             // We ignore gravity while jumping
             if (_jumpButton.IsPressed() && _currentJumpDuration < jumpDuration && _isJumping) {
-                _nextPosition.y +=
-                    ReversePolynomialSmoothing(_currentJumpDuration, jumpStrength, jumpDuration);
                 _currentJumpDuration += Time.deltaTime;
+                verticalVelocity = jumpStrength;
+                return true;
             }
             else {
                 _jumpButton.Reset();
                 _isJumping = false;
                 _currentJumpDuration = 0;
-                if (IsGrounded()) {
-                    _currentAirborneDuration = 0;
-                    _nextPosition.y = 0;
-                }
-                else {
-                    _currentAirborneDuration += Time.deltaTime;
-                    _nextPosition.y = -PolynomialSmoothing(_currentAirborneDuration, gravity, 1);
-                }
+                verticalVelocity = 0;
+                return false;
             }
         }
 
-        // Player have to NOT have collider, because this will break 
-        private bool IsGrounded() {
-            // Kinda bad implementation, at this point should've used rigidBody to detect collision,
-            // but I'm too stubborn to do so... (RigidBody sucks)
-            var position = transform.position;
-            var furtherRayCastHit =
-                Physics2D.Raycast(position, Vector2.down, MaxRayCastLength + 0.1f);
-            var closerRayCastHit = Physics2D.Raycast(position, Vector2.down, MaxRayCastLength);
-
-            // Basically check that we are not IN the ground by doing 2 rayCasts with slight margin 
-            return closerRayCastHit.collider == null && furtherRayCastHit.collider != null;
-        }
+        private bool IsGrounded() => _playerBody.linearVelocity.y == 0;
 
         void Start() {
             MySceneManager.Instance.SetupScene(startingPosition);
-            playerTransform.position = new Vector3(startingPosition.x, startingPosition.y + 1f);
+            transform.position = new Vector3(startingPosition.x, startingPosition.y + 1f);
             _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
             _playerRenderer = GetComponent<SpriteRenderer>();
+            _playerBody = GetComponent<Rigidbody2D>();
         }
 
         private void Update() {
@@ -77,11 +48,12 @@ namespace Player {
             // jump duration is ended but player haven't landed on ground yet... 
             if (_jumpButton.IsPressed() && IsGrounded()) {
                 _isJumping = true;
-                // MySceneManager.Instance.ChangeAllColorsInScene(); // Previous homework
             }
 
-            HandleVerticals();
-            MoveTo(_nextPosition * Time.deltaTime);
+            if (HasVerticalVelocity(out var velocity)) {
+                _playerBody.linearVelocityY = velocity;
+            }
+            _playerBody.linearVelocityX = _horizontalVelocity;
         }
 
         void OnMove(InputValue moveVector) {
@@ -94,15 +66,7 @@ namespace Player {
                 _playerRenderer.flipX = true;
             }
 
-            _nextPosition.x = move.x * moveSpeed;
-        }
-
-        private float ReversePolynomialSmoothing(float time, float weight, float maxTime) {
-            return 1 / weight * (-time * time + maxTime * maxTime);
-        }
-
-        private float PolynomialSmoothing(float time, float weight, float maxTime) {
-            return weight / maxTime * time * time + 1;
+            _horizontalVelocity = move.x * moveSpeed;
         }
     }
 }
