@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
+using GamePlatform;
 
 namespace Core {
-    using Platform;
-
     /// Singleton class to manage current scene
     public class MySceneManager : MonoBehaviour {
         private static MySceneManager _instance;
