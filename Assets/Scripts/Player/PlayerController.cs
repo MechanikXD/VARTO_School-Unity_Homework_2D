@@ -2,11 +2,11 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Core;
-using GamePlatform.PlatformActions.Actions;
-using GamePlatform.PlatformActions.Base;
+using Player.EventSystem;
 
 namespace Player {
     public class PlayerController : MonoBehaviour {
+        public event EventHandler<OnJumpEventArgs> HasJumped; 
         [SerializeField] private Vector2 startingPosition;
         private SpriteRenderer _playerRenderer;
         private Rigidbody2D _playerBody;
@@ -55,6 +55,7 @@ namespace Player {
             // jump duration is ended but player haven't landed on ground yet... 
             if (_jumpButton.IsPressed() && IsGrounded()) {
                 _isJumping = true;
+                HasJumped?.Invoke(this, new OnJumpEventArgs(true));
             }
 
             if (HasVerticalVelocity(out var velocity)) {
@@ -74,13 +75,6 @@ namespace Player {
             }
 
             _horizontalVelocity = move.x * moveSpeed;
-        }
-
-        public void OnCollisionEnter(Collision other) {
-            if (other.gameObject.CompareTag("Ground")) {
-                var actions = other.gameObject.GetComponents<ActionBase>();
-                
-            }
         }
     }
 }
