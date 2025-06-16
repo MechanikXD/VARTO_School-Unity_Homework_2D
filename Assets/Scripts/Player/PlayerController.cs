@@ -1,6 +1,9 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Core;
+using GamePlatform.PlatformActions.Actions;
+using GamePlatform.PlatformActions.Base;
 
 namespace Player {
     public class PlayerController : MonoBehaviour {
@@ -57,9 +60,7 @@ namespace Player {
             if (HasVerticalVelocity(out var velocity)) {
                 _playerBody.linearVelocityY = velocity;
             }
-            else {
-                _playerBody.linearVelocityX = _horizontalVelocity;
-            }
+            _playerBody.linearVelocityX = _horizontalVelocity;
         }
 
         void OnMove(InputValue moveVector) {
@@ -73,6 +74,13 @@ namespace Player {
             }
 
             _horizontalVelocity = move.x * moveSpeed;
+        }
+
+        public void OnCollisionEnter(Collision other) {
+            if (other.gameObject.CompareTag("Ground")) {
+                var actions = other.gameObject.GetComponents<ActionBase>();
+                
+            }
         }
     }
 }
