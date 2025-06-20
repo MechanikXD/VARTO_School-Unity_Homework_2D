@@ -1,14 +1,15 @@
 ﻿using GamePlatform.PlatformActions.Base;
+using UI;
+using UI.Models;
 using UnityEngine;
 
 namespace GamePlatform.PlatformActions.Actions {
     public class PlatformChangeColor : ActionBase {
         [SerializeField] private SpriteRenderer target;
-        // [SerializeField] private BoxCollider2D selfCollider;
         [SerializeField] private Color changeColor = Color.yellow;
 
-        public PlatformChangeColor() : base(actOnlyOnce:true) {}
-        
+        public PlatformChangeColor() : base(actOnlyOnce: true) { }
+
         protected override void InternalAct() {
             target.color = changeColor;
         }

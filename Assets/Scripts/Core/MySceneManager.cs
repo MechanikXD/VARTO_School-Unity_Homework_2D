@@ -13,7 +13,6 @@ namespace Core {
         private Transform _playerTransform;
         private float _platformRepositionDistance;   // Distance from platform to player when can safety reposition
         private GameObject _platformPrefab;
-        private int _playerScore;
 
         private int _nextPlatformToMoveIndex;   // Iterate list instead of queue
         private const float SceneCenter = 0.2f; // A bit offset, since it looks better
@@ -116,7 +115,5 @@ namespace Core {
                 }
             }
         }
-
-        public void IncreasePlayerScore() => _playerScore++;
     }
 }

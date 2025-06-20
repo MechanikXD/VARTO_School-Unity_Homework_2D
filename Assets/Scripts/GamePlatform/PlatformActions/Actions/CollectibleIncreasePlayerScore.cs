@@ -1,14 +1,15 @@
-﻿using Core;
-using GamePlatform.PlatformActions.Base;
+﻿using GamePlatform.PlatformActions.Base;
+using UI;
+using UI.Models;
 using UnityEngine;
 
 namespace GamePlatform.PlatformActions.Actions {
     public class CollectibleIncreasePlayerScore : ActionBase {
-        
-        public CollectibleIncreasePlayerScore() : base(actOnlyOnce:true) {}
-        
+        public CollectibleIncreasePlayerScore() : base(actOnlyOnce: true) { }
+
         protected override void InternalAct() {
-            MySceneManager.Instance.IncreasePlayerScore();
+            SessionModel.CurrentScore += 1;
+            UIController.OnScoreUpdate();
             Destroy(gameObject);
         }
         
