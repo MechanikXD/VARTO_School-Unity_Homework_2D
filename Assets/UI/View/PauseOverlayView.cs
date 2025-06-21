@@ -13,7 +13,7 @@ namespace UI.View {
         public void Start() {
             TryGetComponent(out _thisCanvas);                    // Cash attached canvas
             UIController.PauseButtonPressedEvent += ShowOverlay; // Event not directly bound to this canvas
-            HideOverlay();
+            HideOverlay();                                       // Hide on scene load
         }
 
         public void OnDisable() => UnsubscribeFromEvents();

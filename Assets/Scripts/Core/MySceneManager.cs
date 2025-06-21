@@ -35,7 +35,23 @@ namespace Core {
             }
         }
 
-        public void Awake() {
+        public void Awake() => InstantiateSelf();
+
+        public void Start() {
+            // Separate from InstantiateSelf() initialization related to player.
+            _playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+            if (Camera.main != null) 
+                _platformRepositionDistance = _playerTransform.position.y - Camera.main.transform.position.y;
+            
+            SessionModel.CurrentHeight = 0;
+            SessionModel.CurrentScore = 0;
+            
+            SetupPlatforms();
+        }
+
+        private void Update() => UpdatePlatforms();
+
+        private void InstantiateSelf() {
             _currentScene = SceneManager.GetActiveScene();
             _platformPool = new List<Platform>(PlatformCount);
             _platformPrefab = Resources.Load<GameObject>("Prefabs/Platform");
@@ -56,23 +72,10 @@ namespace Core {
                 _platformPool.Add(newPlatform);
             }
         }
-
-        public void Start() {
-            _playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
-            
-            if (Camera.main != null) {
-                _platformRepositionDistance = _playerTransform.position.y - Camera.main.transform.position.y;
-            }
-
-            SessionModel.CurrentHeight = 0;
-            SessionModel.CurrentScore = 0;
-            
-            SetupScene();
-        }
-
-        private void Update() {
+        
+        private void UpdatePlatforms() {
             if (_platformPool == null) return;
-            
+
             for (var i = 0; i < PlatformCount; i++) {
                 // Player above platform -> activate platform collider
                 _platformPool[i].SetColliderActive(_platformPool[i].PlatformY <
@@ -85,7 +88,7 @@ namespace Core {
             }
         }
 
-        public void SetupScene() {
+        private void SetupPlatforms() {
             if (_platformPool == null) return;
             _platformPool[0].Move(Vector2.zero);
             AdvanceIndexInPool();

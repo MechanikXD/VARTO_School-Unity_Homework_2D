@@ -7,7 +7,9 @@ namespace Core {
         [SerializeField] private float smoothness;
         [SerializeField] private float verticalOffset;
 
-        private void Update() {
+        private void Update() => MoveCameraAfterPlayer();
+
+        private void MoveCameraAfterPlayer() {
             var cameraPosition = cameraTransform.position;
             var newPosition = new Vector3(cameraPosition.x, target.position.y + verticalOffset, cameraPosition.z);
 
