@@ -1,3 +1,4 @@
+using Core;
 using TMPro;
 using UI.Models;
 using UnityEngine;
@@ -10,9 +11,11 @@ namespace UI.View {
         [SerializeField] private Button pauseButton;
 
         public void OnEnable() {
-            pauseButton.onClick.AddListener(PauseGame);
+            pauseButton.onClick.AddListener(UIController.OnPauseButtonPressed);
             UIController.ScoreUpdateEvent += UpdateScoreCounter;
             UIController.HeightUpdateEvent += UpdateHeightCounter;
+            UIController.PauseButtonPressedEvent += MySceneManager.Instance.PauseGameSession;
+            UIController.ResumeButtonPressedEvent += MySceneManager.Instance.ResumeGameSession;
         }
 
         public void Start() {
@@ -21,9 +24,11 @@ namespace UI.View {
         }
 
         public void OnDisable() {
-            pauseButton.onClick.RemoveListener(PauseGame);
+            pauseButton.onClick.RemoveListener(UIController.OnPauseButtonPressed);
             UIController.ScoreUpdateEvent -= UpdateScoreCounter;
             UIController.HeightUpdateEvent -= UpdateHeightCounter;
+            UIController.PauseButtonPressedEvent -= MySceneManager.Instance.PauseGameSession;
+            UIController.ResumeButtonPressedEvent -= MySceneManager.Instance.ResumeGameSession;
         }
         
         private void UpdateScoreCounter() =>
@@ -31,7 +36,5 @@ namespace UI.View {
         
         private void UpdateHeightCounter() =>
             heightCounter.SetText(SessionModel.CurrentHeight.ToString());
-
-        private void PauseGame() {}
     }
 }

@@ -1,24 +1,23 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Core;
 using UI;
 using UI.Models;
 
 namespace Player {
     public class PlayerController : MonoBehaviour {
-        // public event EventHandler<OnJumpEventArgs> HasJumped; 
-        [SerializeField] private Vector2 startingPosition;
         private SpriteRenderer _playerRenderer;
         private Rigidbody2D _playerBody;
 
-        [SerializeField] private float moveSpeed;
+        [SerializeField] private float moveSpeed = 5;
         private float _horizontalVelocity;
 
-        [SerializeField] private float jumpStrength;
-        [SerializeField] private float jumpDuration;
+        [SerializeField] private float jumpStrength = 7;
+        [SerializeField] private float jumpDuration = 0.4f;
         private InputAction _jumpButton;
         private float _currentJumpDuration;
         private bool _isJumping;
+
+        private bool _playerIsInstantiated;
 
         private bool HasVerticalVelocity(out float verticalVelocity) {
             if (_jumpButton.IsPressed() && _currentJumpDuration < jumpDuration && _isJumping) {
@@ -42,9 +41,8 @@ namespace Player {
             return linearVelocity.y > -calculationError && linearVelocity.y < calculationError;
         }
 
-        void Start() {
-            MySceneManager.Instance.SetupScene(startingPosition);
-            transform.position = new Vector3(startingPosition.x, startingPosition.y + 1f);
+        void Awake() {
+            transform.position = new Vector3(0, 1f);
             _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
             _playerRenderer = GetComponent<SpriteRenderer>();
             _playerBody = GetComponent<Rigidbody2D>();
@@ -56,7 +54,6 @@ namespace Player {
             // jump duration is ended but player haven't landed on ground yet... 
             if (_jumpButton.IsPressed() && IsGrounded()) {
                 _isJumping = true;
-                // HasJumped?.Invoke(this, new OnJumpEventArgs(true));
             }
 
             if (HasVerticalVelocity(out var velocity)) {
@@ -65,6 +62,10 @@ namespace Player {
             _playerBody.linearVelocityX = _horizontalVelocity;
             
             UIController.OnHeightUpdate();
+        }
+
+        private void OnDestroy() {
+            UIController.HeightUpdateEvent -= UpdateHeightCounter;
         }
 
         private void UpdateHeightCounter() {
