@@ -1,12 +1,15 @@
+using Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UI;
+using UI.Controllers;
 using UI.Models;
 
 namespace Player {
     public class PlayerController : MonoBehaviour {
         private SpriteRenderer _playerRenderer;
         private Rigidbody2D _playerBody;
+        [SerializeField] private int fallDistanceToGameOver;
 
         [SerializeField] private float moveSpeed = 5;
         private float _horizontalVelocity;
@@ -19,8 +22,11 @@ namespace Player {
 
         private bool _playerIsInstantiated;
 
-        void Awake() => InstantiateSelf();
-        
+        void Awake() {
+            InstantiateSelf();
+            var _ = MySceneManager.Instance;    // Call scene manager on awake, so it can be instantiated
+        }
+
         // Handle player movement
         private void Update() {
             // Store this one in boolean. Otherwise we may be able to jump after
@@ -34,12 +40,12 @@ namespace Player {
             }
             _playerBody.linearVelocityX = _horizontalVelocity;
             
-            UIController.OnHeightUpdate();
+            GameUIController.OnHeightUpdate();
         }
 
         private void OnDestroy() {
             // Unsubscribe from events
-            UIController.HeightUpdateEvent -= UpdateHeightCounter;
+            GameUIController.HeightUpdateEvent -= UpdateHeightCounter;
         }
 
         private void InstantiateSelf() {
@@ -47,12 +53,16 @@ namespace Player {
             _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
             _playerRenderer = GetComponent<SpriteRenderer>();
             _playerBody = GetComponent<Rigidbody2D>();
-            UIController.HeightUpdateEvent += UpdateHeightCounter;
+            GameUIController.HeightUpdateEvent += UpdateHeightCounter;
         }
 
         private void UpdateHeightCounter() {
-            if (SessionModel.CurrentHeight < transform.position.y) {
+            var sessionHeightDifference = transform.position.y - SessionModel.CurrentHeight;
+            if (sessionHeightDifference > 0) {
                 SessionModel.CurrentHeight = (int)transform.position.y;
+            }
+            else if (sessionHeightDifference < -fallDistanceToGameOver) {
+                MySceneManager.Instance.EndCurrentSession();
             }
         }
         

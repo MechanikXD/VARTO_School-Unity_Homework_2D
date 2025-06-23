@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 using GamePlatform;
+using Player;
+using UI;
+using UI.Controllers;
 using UI.Models;
 
 namespace Core {
@@ -21,6 +24,8 @@ namespace Core {
         private const int PlatformCount = 5;
         private float _platformMaxHorizontalStep; 
         private float _platformVerticalStep;
+
+        private bool _gameIsActive;
 
         public static MySceneManager Instance {
             get {
@@ -43,19 +48,22 @@ namespace Core {
             if (Camera.main != null) 
                 _platformRepositionDistance = _playerTransform.position.y - Camera.main.transform.position.y;
             
-            SessionModel.CurrentHeight = 0;
-            SessionModel.CurrentScore = 0;
-            
             SetupPlatforms();
+            SubscribeToInvents();
         }
 
         private void Update() => UpdatePlatforms();
+
+        private void OnDestroy() => UnsubscribeFromEvents();
 
         private void InstantiateSelf() {
             _currentScene = SceneManager.GetActiveScene();
             _platformPool = new List<Platform>(PlatformCount);
             _platformPrefab = Resources.Load<GameObject>("Prefabs/Platform");
             LoadPreviousGameData();
+            
+            SessionModel.CurrentHeight = 0;
+            SessionModel.CurrentScore = 0;
 
             if (Camera.main != null) {
                 var mainCamera = Camera.main;
@@ -71,10 +79,26 @@ namespace Core {
                 newPlatform.InstantiateSelf(_platformPrefab);
                 _platformPool.Add(newPlatform);
             }
+
+            _gameIsActive = true;
+        }
+
+        private void SubscribeToInvents() {
+            GameUIController.RestartButtonPressedEvent += RestartGameSession;
+            GameUIController.ExitButtonPressedEvent += ExitGameSession;
+            GameUIController.PauseButtonPressedEvent += PauseGameSession;
+            GameUIController.ResumeButtonPressedEvent += ResumeGameSession;
+        }
+
+        private void UnsubscribeFromEvents() {
+            GameUIController.RestartButtonPressedEvent -= RestartGameSession;
+            GameUIController.ExitButtonPressedEvent -= ExitGameSession;
+            GameUIController.PauseButtonPressedEvent -= PauseGameSession;
+            GameUIController.ResumeButtonPressedEvent -= ResumeGameSession;
         }
         
         private void UpdatePlatforms() {
-            if (_platformPool == null) return;
+            if (_platformPool == null || !_gameIsActive) return;
 
             for (var i = 0; i < PlatformCount; i++) {
                 // Player above platform -> activate platform collider
@@ -122,24 +146,37 @@ namespace Core {
             AdvanceIndexInPool();
         }
 
-        public void RestartGameSession() {
+        private void RestartGameSession() {
+            _gameIsActive = false;
             SaveCurrentGameData();
             var currentSceneIndex = _currentScene.buildIndex;
-            foreach (var platform in _platformPool) {
-                platform.DestroySelf();
-            }
-            SceneManager.LoadScene(currentSceneIndex);
             ResumeGameSession();
+            SceneManager.LoadScene(currentSceneIndex);
         }
         
-        public void ExitGameSession() {
+        private void ExitGameSession() {
+            _gameIsActive = false;
             SaveCurrentGameData();
             Debug.LogError("Not implemented method: MySceneManager - ExitGameSession() ");
         }
 
-        public void PauseGameSession() => Time.timeScale = 0;
+        private void PauseGameSession() => Time.timeScale = 0;
 
-        public void ResumeGameSession() => Time.timeScale = 1;
+        private void ResumeGameSession() => Time.timeScale = 1;
+
+        // ReSharper disable Unity.PerformanceAnalysis
+        public void EndCurrentSession() {
+            _gameIsActive = false;
+            SaveCurrentGameData();
+            if (Camera.main != null) {
+                Camera.main.GetComponent<CameraController>().enabled = false;
+            }
+            var player = _playerTransform.gameObject;
+            player.GetComponent<PlayerController>().enabled = false;
+            Destroy(player, 1);
+            
+            GameUIController.OnGameOver();
+        }
 
         private void LoadPreviousGameData() {
             // TODO: Move PlayerPrefs fields into separate enum 
@@ -147,16 +184,18 @@ namespace Core {
                 SessionModel.BestHeight = PlayerPrefs.GetInt("Best Height");
             }
             if (PlayerPrefs.HasKey("Best Score")) {
-                SessionModel.BestHeight = PlayerPrefs.GetInt("Best Score");
+                SessionModel.BestScore = PlayerPrefs.GetInt("Best Score");
             }
         }
 
         private void SaveCurrentGameData() {
-            if (PlayerPrefs.HasKey("Best Height") && SessionModel.BestHeight < SessionModel.CurrentHeight) {
+            if (SessionModel.BestHeight < SessionModel.CurrentHeight) {
                 PlayerPrefs.SetInt("Best Height", SessionModel.CurrentHeight);
+                SessionModel.BestHeight = SessionModel.CurrentHeight;
             }
-            if (PlayerPrefs.HasKey("Best Score") && SessionModel.BestScore < SessionModel.CurrentScore) {
+            if (SessionModel.BestScore < SessionModel.CurrentScore) {
                 PlayerPrefs.SetInt("Best Score", SessionModel.CurrentScore);
+                SessionModel.BestScore = SessionModel.CurrentScore;
             }
         }
         

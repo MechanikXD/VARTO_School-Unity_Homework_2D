@@ -1,5 +1,6 @@
 ﻿using GamePlatform.PlatformActions.Base;
 using UI;
+using UI.Controllers;
 using UI.Models;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace GamePlatform.PlatformActions.Actions {
 
         protected override void InternalAct() {
             SessionModel.CurrentScore += 1;
-            UIController.OnScoreUpdate();
+            GameUIController.OnScoreUpdate();
             Destroy(gameObject);
         }
         

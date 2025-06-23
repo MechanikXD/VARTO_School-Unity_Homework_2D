@@ -1,10 +1,10 @@
-using Core;
 using TMPro;
+using UI.Controllers;
 using UI.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UI.View {
+namespace UI.View.GameView {
     public class HudView : MonoBehaviour {
         [SerializeField] private TMP_Text scoreCounter;
         [SerializeField] private TMP_Text heightCounter;
@@ -21,19 +21,16 @@ namespace UI.View {
         public void OnDisable() => UnsubscribeFromMethods();
 
         private void SubscribeToMethods() {
-            pauseButton.onClick.AddListener(UIController.OnPauseButtonPressed);
-            UIController.ScoreUpdateEvent += UpdateScoreCounter;
-            UIController.HeightUpdateEvent += UpdateHeightCounter;
-            UIController.PauseButtonPressedEvent += MySceneManager.Instance.PauseGameSession;
-            UIController.ResumeButtonPressedEvent += MySceneManager.Instance.ResumeGameSession;
+            pauseButton.onClick.AddListener(GameUIController.OnPauseButtonPressed);
+            GameUIController.ScoreUpdateEvent += UpdateScoreCounter;
+            GameUIController.HeightUpdateEvent += UpdateHeightCounter;
+            
         }
         
         private void UnsubscribeFromMethods() {
-            pauseButton.onClick.RemoveListener(UIController.OnPauseButtonPressed);
-            UIController.ScoreUpdateEvent -= UpdateScoreCounter;
-            UIController.HeightUpdateEvent -= UpdateHeightCounter;
-            UIController.PauseButtonPressedEvent -= MySceneManager.Instance.PauseGameSession;
-            UIController.ResumeButtonPressedEvent -= MySceneManager.Instance.ResumeGameSession;
+            pauseButton.onClick.RemoveListener(GameUIController.OnPauseButtonPressed);
+            GameUIController.ScoreUpdateEvent -= UpdateScoreCounter;
+            GameUIController.HeightUpdateEvent -= UpdateHeightCounter;
         }
 
         private void UpdateScoreCounter() =>
