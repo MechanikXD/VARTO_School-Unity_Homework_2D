@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 using GamePlatform;
 using Player;
-using UI;
 using UI.Controllers;
 using UI.Models;
 
@@ -157,7 +156,7 @@ namespace Core {
         private void ExitGameSession() {
             _gameIsActive = false;
             SaveCurrentGameData();
-            Debug.LogError("Not implemented method: MySceneManager - ExitGameSession() ");
+            SceneManager.LoadScene("MainMenuScene");
         }
 
         private void PauseGameSession() => Time.timeScale = 0;
