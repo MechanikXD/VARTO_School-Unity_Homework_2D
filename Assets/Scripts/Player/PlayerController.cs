@@ -1,7 +1,6 @@
 using Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UI;
 using UI.Controllers;
 using UI.Models;
 
@@ -19,8 +18,6 @@ namespace Player {
         private InputAction _jumpButton;
         private float _currentJumpDuration;
         private bool _isJumping;
-
-        private bool _playerIsInstantiated;
 
         void Awake() {
             InstantiateSelf();

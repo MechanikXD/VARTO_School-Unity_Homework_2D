@@ -1,5 +1,4 @@
 ﻿using GamePlatform.PlatformActions.Base;
-using UI;
 using UI.Controllers;
 using UI.Models;
 using UnityEngine;
@@ -15,9 +14,7 @@ namespace GamePlatform.PlatformActions.Actions {
         }
         
         public void OnTriggerStay2D(Collider2D other) {
-            if (other.gameObject.CompareTag("Player")) {
-                Act();
-            }
+            if (other.gameObject.CompareTag("Player")) Act();
         }
     }
 }

@@ -1,6 +1,4 @@
 ﻿using GamePlatform.PlatformActions.Base;
-using UI;
-using UI.Models;
 using UnityEngine;
 
 namespace GamePlatform.PlatformActions.Actions {
@@ -10,14 +8,10 @@ namespace GamePlatform.PlatformActions.Actions {
 
         public PlatformChangeColor() : base(actOnlyOnce: true) { }
 
-        protected override void InternalAct() {
-            target.color = changeColor;
-        }
+        protected override void InternalAct() => target.color = changeColor;
 
         private void OnCollisionEnter2D(Collision2D other) {
-            if (other.gameObject.CompareTag("Player")) {
-                Act();
-            }
+            if (other.gameObject.CompareTag("Player")) Act();
         }
     }
 }

@@ -12,20 +12,20 @@ namespace Core {
     public class MySceneManager : MonoBehaviour {
         private static MySceneManager _instance;
         private Scene _currentScene;
-        private List<Platform> _platformPool;  // Pool of platform to build level from. (Should be on scene)
         private Transform _playerTransform;
-        private float _platformRepositionDistance;   // Distance from platform to player when can safety reposition
+        private bool _gameIsActive;
+        
+        private List<Platform> _platformPool;  // Pool of platform to build level from. (Should be on scene)
         private GameObject _platformPrefab;
-
+        private float _platformRepositionDistance;   // Distance from platform to player when can safety reposition
         private int _nextPlatformToMoveIndex;   // Iterate list instead of queue
+        private const int PlatformCount = 5;
+        
         private const float SceneCenter = 0.2f; // A bit offset, since it looks better
         private const float ScreenRelativePlatformDeviation = 0.6f; // part of the half of the screen from center
-        private const int PlatformCount = 5;
         private float _platformMaxHorizontalStep; 
         private float _platformVerticalStep;
-
-        private bool _gameIsActive;
-
+        
         public static MySceneManager Instance {
             get {
                 if (_instance != null) {
@@ -159,9 +159,9 @@ namespace Core {
             SceneManager.LoadScene("MainMenuScene");
         }
 
-        private void PauseGameSession() => Time.timeScale = 0;
+        private static void PauseGameSession() => Time.timeScale = 0;
 
-        private void ResumeGameSession() => Time.timeScale = 1;
+        private static void ResumeGameSession() => Time.timeScale = 1;
 
         // ReSharper disable Unity.PerformanceAnalysis
         public void EndCurrentSession() {
@@ -177,7 +177,7 @@ namespace Core {
             GameUIController.OnGameOver();
         }
 
-        private void LoadPreviousGameData() {
+        private static void LoadPreviousGameData() {
             // TODO: Move PlayerPrefs fields into separate enum 
             if (PlayerPrefs.HasKey("Best Height")) {
                 SessionModel.BestHeight = PlayerPrefs.GetInt("Best Height");
@@ -187,7 +187,7 @@ namespace Core {
             }
         }
 
-        private void SaveCurrentGameData() {
+        private static void SaveCurrentGameData() {
             if (SessionModel.BestHeight < SessionModel.CurrentHeight) {
                 PlayerPrefs.SetInt("Best Height", SessionModel.CurrentHeight);
                 SessionModel.BestHeight = SessionModel.CurrentHeight;
@@ -195,14 +195,6 @@ namespace Core {
             if (SessionModel.BestScore < SessionModel.CurrentScore) {
                 PlayerPrefs.SetInt("Best Score", SessionModel.CurrentScore);
                 SessionModel.BestScore = SessionModel.CurrentScore;
-            }
-        }
-        
-        public void ChangeAllColorsInScene() {
-            foreach (var gameObj in _currentScene.GetRootGameObjects()) {
-                if (gameObj.TryGetComponent<SpriteRenderer>(out var sprite)) {
-                    sprite.color = Random.ColorHSV();
-                }
             }
         }
     }
