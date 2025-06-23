@@ -12,6 +12,8 @@ namespace Core {
         private List<Platform> _platformPool;  // Pool of platform to build level from. (Should be on scene)
         private Transform _playerTransform;
         private float _platformRepositionDistance;   // Distance from platform to player when can safety reposition
+        private GameObject _platformPrefab;
+        private int _playerScore;
 
         private int _nextPlatformToMoveIndex;   // Iterate list instead of queue
         private const float SceneCenter = 0.2f; // A bit offset, since it looks better
@@ -39,9 +41,11 @@ namespace Core {
             _currentScene = SceneManager.GetActiveScene();
 
             _platformPool = new List<Platform>(PlatformCount);
-            var groundObjects = Resources.Load<GameObject>("Prefabs/Platform");
+            _platformPrefab = Resources.Load<GameObject>("Prefabs/Platform");
             for (var _ = 0; _ < PlatformCount; _++) {
-                _platformPool.Add(new Platform(groundObjects));
+                var newPlatform = new Platform();
+                newPlatform.InstantiateSelf(_platformPrefab);
+                _platformPool.Add(newPlatform);
             }
 
             if (Camera.main != null) {
@@ -98,6 +102,8 @@ namespace Core {
         }
 
         private void RepositionPlatformOnIndex(int index) {
+            _platformPool[index].DestroySelf();
+            _platformPool[index].InstantiateSelf(_platformPrefab);
             _platformPool[index].Move(GetCoordinatesForNextPlatform());
             _platformPool[index].SetColliderActive(false);
             AdvanceIndexInPool();
@@ -110,5 +116,7 @@ namespace Core {
                 }
             }
         }
+
+        public void IncreasePlayerScore() => _playerScore++;
     }
 }
