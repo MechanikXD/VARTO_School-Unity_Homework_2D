@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -11,7 +12,7 @@ namespace UI.View.MainMenu {
         [SerializeField] private Button backButton;
         [SerializeField] private GameObject buttonContainer;
         [SerializeField] private GameObject recordContainer;
-        [SerializeField] private Transform recordContent;
+        [SerializeField] private TextMeshProUGUI recordText;
         
         public void OnEnable() => SubscribeToMethods();
 
@@ -34,11 +35,17 @@ namespace UI.View.MainMenu {
         private void ShowRecords() {
             buttonContainer.SetActive(false);
             recordContainer.SetActive(true);
+            LoadRecords();
         }
         
         private void HideRecords() {
             recordContainer.SetActive(false);
             buttonContainer.SetActive(true);
+        }
+
+        private void LoadRecords() {
+            var sessions = PlayerPrefs.GetString("Sessions");
+            recordText.SetText(sessions);
         }
 
         private static void Play() => SceneManager.LoadScene("GameScene");

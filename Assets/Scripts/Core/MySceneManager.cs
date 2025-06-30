@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +15,7 @@ namespace Core {
         private Scene _currentScene;
         private Transform _playerTransform;
         private bool _gameIsActive;
+        private DateTime _sessionStart;
         
         private List<Platform> _platformPool;  // Pool of platform to build level from. (Should be on scene)
         private GameObject _platformPrefab;
@@ -25,7 +27,7 @@ namespace Core {
         private const float ScreenRelativePlatformDeviation = 0.6f; // part of the half of the screen from center
         private float _platformMaxHorizontalStep; 
         private float _platformVerticalStep;
-        
+
         public static MySceneManager Instance {
             get {
                 if (_instance != null) {
@@ -46,6 +48,7 @@ namespace Core {
             _playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
             if (Camera.main != null) 
                 _platformRepositionDistance = _playerTransform.position.y - Camera.main.transform.position.y;
+            _sessionStart = DateTime.Now;
             
             SetupPlatforms();
             SubscribeToInvents();
@@ -53,7 +56,10 @@ namespace Core {
 
         private void Update() => UpdatePlatforms();
 
-        private void OnDestroy() => UnsubscribeFromEvents();
+        private void OnDestroy() {
+            UnsubscribeFromEvents();
+            StoreSessionData();
+        }
 
         private void InstantiateSelf() {
             _currentScene = SceneManager.GetActiveScene();
@@ -187,7 +193,7 @@ namespace Core {
             }
         }
 
-        private static void SaveCurrentGameData() {
+        private void SaveCurrentGameData() {
             if (SessionModel.BestHeight < SessionModel.CurrentHeight) {
                 PlayerPrefs.SetInt("Best Height", SessionModel.CurrentHeight);
                 SessionModel.BestHeight = SessionModel.CurrentHeight;
@@ -196,6 +202,12 @@ namespace Core {
                 PlayerPrefs.SetInt("Best Score", SessionModel.CurrentScore);
                 SessionModel.BestScore = SessionModel.CurrentScore;
             }
+        }
+
+        private void StoreSessionData() {
+            var previousSessions = PlayerPrefs.GetString("Sessions");
+            previousSessions += $"{_sessionStart:u}: Height - {SessionModel.CurrentHeight}; Score - {SessionModel.CurrentScore}\n";
+            PlayerPrefs.SetString( "Sessions", previousSessions);
         }
     }
 }
