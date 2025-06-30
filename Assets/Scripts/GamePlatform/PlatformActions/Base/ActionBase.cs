@@ -3,25 +3,25 @@ using UnityEngine;
 
 namespace GamePlatform.PlatformActions.Base {
     public abstract class ActionBase : MonoBehaviour {
-        protected readonly bool ActOnlyOnce;
-        protected readonly bool ActOnStart;
+        private readonly bool _actOnlyOnce;
+        private readonly bool _actOnStart;
         private bool _hasExecuted;
 
         protected ActionBase(bool actOnStart=false, bool actOnlyOnce=false) {
-            ActOnlyOnce = actOnlyOnce;
-            ActOnStart = actOnStart;
+            _actOnlyOnce = actOnlyOnce;
+            _actOnStart = actOnStart;
         }
         
         private void Start() {
-            if (!ActOnStart) return;
+            if (!_actOnStart) return;
 
             Act();
         }
 
         protected abstract void InternalAct();
 
-        public void Act(Func<bool> predicate=null) {
-            if (ActOnlyOnce && _hasExecuted) return;
+        protected void Act(Func<bool> predicate=null) {
+            if (_actOnlyOnce && _hasExecuted) return;
 
             if (predicate != null) {
                 if (!predicate()) return;

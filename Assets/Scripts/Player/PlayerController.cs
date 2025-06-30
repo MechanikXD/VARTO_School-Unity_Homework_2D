@@ -1,25 +1,68 @@
-using System;
+using Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Core;
-using Player.EventSystem;
+using UI.Controllers;
+using UI.Models;
 
 namespace Player {
     public class PlayerController : MonoBehaviour {
-        public event EventHandler<OnJumpEventArgs> HasJumped; 
-        [SerializeField] private Vector2 startingPosition;
         private SpriteRenderer _playerRenderer;
         private Rigidbody2D _playerBody;
+        [SerializeField] private int fallDistanceToGameOver;
 
-        [SerializeField] private float moveSpeed;
+        [SerializeField] private float moveSpeed = 5;
         private float _horizontalVelocity;
 
-        [SerializeField] private float jumpStrength;
-        [SerializeField] private float jumpDuration;
+        [SerializeField] private float jumpStrength = 7;
+        [SerializeField] private float jumpDuration = 0.4f;
         private InputAction _jumpButton;
         private float _currentJumpDuration;
         private bool _isJumping;
 
+        void Awake() {
+            InstantiateSelf();
+            var _ = MySceneManager.Instance;    // Call scene manager on awake, so it can be instantiated
+        }
+
+        // Handle player movement
+        private void Update() {
+            // Store this one in boolean. Otherwise we may be able to jump after
+            // jump duration is ended but player haven't landed on ground yet... 
+            if (_jumpButton.IsPressed() && IsGrounded()) {
+                _isJumping = true;
+            }
+
+            if (HasVerticalVelocity(out var velocity)) {
+                _playerBody.linearVelocityY = velocity;
+            }
+            _playerBody.linearVelocityX = _horizontalVelocity;
+            
+            GameUIController.OnHeightUpdate();
+        }
+
+        private void OnDestroy() {
+            // Unsubscribe from events
+            GameUIController.HeightUpdateEvent -= UpdateHeightCounter;
+        }
+
+        private void InstantiateSelf() {
+            transform.position = new Vector3(0, 1f);
+            _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
+            _playerRenderer = GetComponent<SpriteRenderer>();
+            _playerBody = GetComponent<Rigidbody2D>();
+            GameUIController.HeightUpdateEvent += UpdateHeightCounter;
+        }
+
+        private void UpdateHeightCounter() {
+            var sessionHeightDifference = transform.position.y - SessionModel.CurrentHeight;
+            if (sessionHeightDifference > 0) {
+                SessionModel.CurrentHeight = (int)transform.position.y;
+            }
+            else if (sessionHeightDifference < -fallDistanceToGameOver) {
+                MySceneManager.Instance.EndCurrentSession();
+            }
+        }
+        
         private bool HasVerticalVelocity(out float verticalVelocity) {
             if (_jumpButton.IsPressed() && _currentJumpDuration < jumpDuration && _isJumping) {
                 _currentJumpDuration += Time.deltaTime;
@@ -40,28 +83,6 @@ namespace Player {
             Vector2 linearVelocity = _playerBody.linearVelocity;
             var calculationError = 0.0001f;
             return linearVelocity.y > -calculationError && linearVelocity.y < calculationError;
-        }
-
-        void Start() {
-            MySceneManager.Instance.SetupScene(startingPosition);
-            transform.position = new Vector3(startingPosition.x, startingPosition.y + 1f);
-            _jumpButton = GetComponent<PlayerInput>().actions["Jump"];
-            _playerRenderer = GetComponent<SpriteRenderer>();
-            _playerBody = GetComponent<Rigidbody2D>();
-        }
-
-        private void Update() {
-            // Store this one in boolean. Otherwise we may be able to jump after
-            // jump duration is ended but player haven't landed on ground yet... 
-            if (_jumpButton.IsPressed() && IsGrounded()) {
-                _isJumping = true;
-                HasJumped?.Invoke(this, new OnJumpEventArgs(true));
-            }
-
-            if (HasVerticalVelocity(out var velocity)) {
-                _playerBody.linearVelocityY = velocity;
-            }
-            _playerBody.linearVelocityX = _horizontalVelocity;
         }
 
         void OnMove(InputValue moveVector) {
