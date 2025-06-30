@@ -3,25 +3,25 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace UI.View.GameView {
+    [RequireComponent(typeof(Canvas))]
     public class PauseOverlayView : MonoBehaviour {
         private Canvas _thisCanvas;
         [SerializeField] private Button resumeButton;
         [SerializeField] private Button restartButton;
         [SerializeField] private Button exitButton;
 
-        public void OnEnable() => SubscribeToEvents();
-        public void Start() {
-            TryGetComponent(out _thisCanvas);                    // Cash attached canvas
+        public void Awake() {
+            // TryGetComponent(out _thisCanvas);                        // Cash attached canvas
             GameUIController.PauseButtonPressedEvent += ShowOverlay; // Event not directly bound to this canvas
-            HideOverlay();                                       // Hide on scene load
+            HideOverlay();                                           // Hide on scene load
         }
+        
+        public void OnEnable() => SubscribeToEvents();
 
         public void OnDisable() => UnsubscribeFromEvents();
 
-        public void OnDestroy() {
-            GameUIController.PauseButtonPressedEvent -= ShowOverlay;
-        }
-        
+        public void OnDestroy() => GameUIController.PauseButtonPressedEvent -= ShowOverlay;
+
         private void SubscribeToEvents() {
             GameUIController.ResumeButtonPressedEvent += HideOverlay;
             

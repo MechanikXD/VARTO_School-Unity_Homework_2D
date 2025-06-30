@@ -10,16 +10,17 @@ namespace UI.View.GameView {
         [SerializeField] private Button restartButton;
         [SerializeField] private Button exitButton;
 
-        [SerializeField] private TMP_Text currentScoreText;
-        [SerializeField] private TMP_Text bestScoreText;
-        [SerializeField] private TMP_Text currentHeightText;
-        [SerializeField] private TMP_Text bestHeightText;
+        [SerializeField] private TextMeshProUGUI currentScoreText;
+        [SerializeField] private TextMeshProUGUI bestScoreText;
+        [SerializeField] private TextMeshProUGUI currentHeightText;
+        [SerializeField] private TextMeshProUGUI bestHeightText;
         
-        public void OnEnable() => SubscribeToEvents();
-        public void Start() {
-            TryGetComponent(out _thisCanvas);                    // Cash attached canvas
+        public void Awake() {
+            _thisCanvas = currentHeightText.canvas;              // Cash attached canvas
             HideOverlay();                                       // Hide on scene load
         }
+        
+        public void OnEnable() => SubscribeToEvents();
 
         public void OnDisable() => UnsubscribeFromEvents();
         

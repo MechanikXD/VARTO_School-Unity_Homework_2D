@@ -6,17 +6,17 @@ using UnityEngine.UI;
 
 namespace UI.View.GameView {
     public class HudView : MonoBehaviour {
-        [SerializeField] private TMP_Text scoreCounter;
-        [SerializeField] private TMP_Text heightCounter;
+        [SerializeField] private TextMeshProUGUI scoreCounter;
+        [SerializeField] private TextMeshProUGUI heightCounter;
         [SerializeField] private Button pauseButton;
 
-        public void OnEnable() => SubscribeToMethods();
-        
-        public void Start() {
+        public void Awake() {
             // Set initial value to counters
             scoreCounter.SetText("0");
             heightCounter.SetText("0");
         }
+        
+        public void OnEnable() => SubscribeToMethods();
 
         public void OnDisable() => UnsubscribeFromMethods();
 
