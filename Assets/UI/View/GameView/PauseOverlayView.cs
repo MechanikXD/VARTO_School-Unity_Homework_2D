@@ -11,7 +11,7 @@ namespace UI.View.GameView {
         [SerializeField] private Button exitButton;
 
         public void Awake() {
-            // TryGetComponent(out _thisCanvas);                        // Cash attached canvas
+            TryGetComponent(out _thisCanvas);                        // Cash attached canvas
             GameUIController.PauseButtonPressedEvent += ShowOverlay; // Event not directly bound to this canvas
             HideOverlay();                                           // Hide on scene load
         }

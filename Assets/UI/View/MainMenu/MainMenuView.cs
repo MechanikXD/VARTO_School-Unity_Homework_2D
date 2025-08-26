@@ -1,4 +1,4 @@
-﻿using UI.Controllers;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -6,31 +6,50 @@ using UnityEngine.UI;
 namespace UI.View.MainMenu {
     public class MainMenuView : MonoBehaviour {
         [SerializeField] private Button playButton;
-        [SerializeField] private Button settingsButton;
+        [SerializeField] private Button recordsButton;
         [SerializeField] private Button exitButton;
+
+        [SerializeField] private Button backButton;
+        [SerializeField] private GameObject buttonContainer;
+        [SerializeField] private GameObject recordContainer;
+        [SerializeField] private TextMeshProUGUI recordText;
         
         public void OnEnable() => SubscribeToMethods();
 
         public void OnDisable() => UnsubscribeFromMethods();
 
         private void SubscribeToMethods() {
-            MainMenuController.PlayEvent += Play;
-            MainMenuController.ExitEvent += Exit;
-            
-            playButton.onClick.AddListener(MainMenuController.OnPlay);
-            exitButton.onClick.AddListener(MainMenuController.OnExit);
+            playButton.onClick.AddListener(Play);
+            exitButton.onClick.AddListener(Exit);
+            recordsButton.onClick.AddListener(ShowRecords);
+            backButton.onClick.AddListener(HideRecords);
         }
 
         private void UnsubscribeFromMethods() {
-            MainMenuController.PlayEvent -= Play;
-            MainMenuController.ExitEvent -= Exit;
-            
-            playButton.onClick.RemoveListener(MainMenuController.OnPlay);
-            exitButton.onClick.RemoveListener(MainMenuController.OnExit);
+            playButton.onClick.RemoveListener(Play);
+            exitButton.onClick.RemoveListener(Exit);
+            recordsButton.onClick.RemoveListener(ShowRecords);
+            backButton.onClick.RemoveListener(HideRecords);
         }
 
-        private void Play() => SceneManager.LoadScene("GameScene");
+        private void ShowRecords() {
+            buttonContainer.SetActive(false);
+            recordContainer.SetActive(true);
+            LoadRecords();
+        }
+        
+        private void HideRecords() {
+            recordContainer.SetActive(false);
+            buttonContainer.SetActive(true);
+        }
+
+        private void LoadRecords() {
+            var sessions = PlayerPrefs.GetString("Sessions");
+            recordText.SetText(sessions);
+        }
+
+        private static void Play() => SceneManager.LoadScene("GameScene");
         // I don't know whether it work or not, because in unity it does nothing, but it may work in builds...
-        public void Exit() => Application.Quit();
+        private static void Exit() => Application.Quit();
     }
 }
